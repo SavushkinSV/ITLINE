@@ -8,11 +8,11 @@ import ssv.home.itline.service.UserService;
 
 @Controller
 @RequestMapping("/")
-public class ItlineController {
+public class UserController {
 
     private final UserService userService;
 
-    public ItlineController(UserService userService) {
+    public UserController(UserService userService) {
         this.userService = userService;
     }
 
