@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>ITLINE</title>
+    <title>ItLine</title>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -18,7 +18,7 @@
                     data-target="#userAddDialog">Добавить
             </button>
             <button id="delete" type="button" class="btn btn-primary" data-toggle="modal"
-                    data-target="#userAddDialog">Удалить
+                    data-target="#userDeleteDialog" disabled="disabled">Удалить
             </button>
         </div>
         <div class="col-12">
@@ -32,7 +32,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="user : ${users}">
+                <tr th:each="user : ${users}" th:data-id="${user.id}">
                     <th scope="row" class="text-center align-middle">
                         <label th:for="'checkbox-' + ${user.id}">
                             <input type="checkbox" name="active"
@@ -96,34 +96,38 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="userDeleteDialog" tabindex="-1" role="dialog" aria-labelledby="userDeleteDialogLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="userDeleteDialogLabel">Delete user</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Вы точно хотите удалить <span id="user-delete"></span>?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                <button id="delete-user-button" type="button" class="btn btn-primary">Удалить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 </body>
 
 <!-- Optional JavaScript -->
 <script th:src="@{js/jquery-3.7.1.min.js}"></script>
 <script th:src="@{js/bootstrap.bundle.js}"></script>
 <script>
-    $('#userAddDialog').on('shown.bs.modal', function (event) {
-        let button = $(event.relatedTarget) // Button that triggered the modal
-        let userId = button.data('userid') // Extract info from data-* attributes
+    let selectedRow;
 
-        if (userId) {
-            $.get({
-                url: '/api/v1/user/' + userId,
-                success: (data) => {
-                    let modal = $(this)
-                    modal.find('#user-id').val(data.id)
-                    modal.find('#user-name').val(data.username)
-                    modal.find('#user-password').val(data.password)
-                },
-                error: (err) => {
-                    alert(err);
-                }
-            });
-        }
-    })
-
-    $('#save-user-button').click(function (e) {
-        e.preventDefault();
+    $('#save-user-button').click(function (event) {
+        event.preventDefault();
         if (checkFields()) {
             let modal = $('#userAddDialog')
             let user = {
@@ -178,6 +182,43 @@
         }
         return isValid;
     }
+
+    $(document).ready(function () {
+        $('table').on('click', 'tr', function () {
+            selectedRow = $(this);
+            $(this).addClass('selected');
+            $('#delete').prop('disabled', false);
+        });
+    });
+
+    $('#userDeleteDialog').on('shown.bs.modal', function () {
+        let modal = $('#userDeleteDialog')
+        let userId = selectedRow.attr("data-id");
+        if (userId) {
+            $.get({
+                url: '/api/v1/user/' + userId,
+                success: (user) => {
+                    modal.find('#user-delete').text(user.name);
+                },
+                error: (err) => {
+                    alert(err);
+                }
+            });
+        }
+    })
+
+    $('#delete-user-button').click(function () {
+        let modal = $('#userDeleteDialog')
+        let userId = selectedRow.attr("data-id");
+        $.ajax({
+            url: '/api/v1/user/' + userId,
+            type: 'DELETE',
+            success: function () {
+                location.reload();
+            },
+        });
+        modal.modal('hide');
+    });
 </script>
 
 </html>

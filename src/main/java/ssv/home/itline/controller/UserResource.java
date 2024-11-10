@@ -27,10 +27,16 @@ public class UserResource {
         return userService.save(user);
     }
 
-    @PutMapping("/{userId}")
-    public User updateUser(@PathVariable long userId, @RequestBody boolean status) {
-        User user = userService.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+    @PutMapping("/{id}")
+    public User updateUser(@PathVariable long id, @RequestBody boolean status) {
+        User user = userService.findById(id).orElseThrow(() -> new NotFoundException("User not found"));
         user.setStatus(status);
         return userService.save(user);
     }
+
+    @DeleteMapping("/{id}")
+    public void  delete(@PathVariable long id) {
+        userService.delete(id);
+    }
+
 }

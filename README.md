@@ -6,3 +6,5 @@
 Контейнер запускается с помощью команды `docker-compose up -d`. Остановка контейнера выполняется с помощью команды `docker-compose down`.
 
 Необходимые настройки приложения для соединения с **PostgreSQL** находятся в файле [application.properties](src/main/resources/application.properties). Запуск приложения выполняется с обязательной передачей аргумента `spring` командной строки в метод `main`.
+
+Приложение работает по адресу http://localhost:8080/itline.

@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import ssv.home.itline.service.UserService;
 
 @Controller
-@RequestMapping("/")
+@RequestMapping("/itline")
 public class UserController {
 
     private final UserService userService;
