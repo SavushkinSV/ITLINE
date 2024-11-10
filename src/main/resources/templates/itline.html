@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>ItLine</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" th:href="@{css/bootstrap.min.css}">
+</head>
+
+<body>
+<div class="container">
+    <h1>Добро пожаловать на стартовую страницу!</h1>
+    <div class="row py-2">
+        <div class="col-12">
+            <button id="create" type="button" class="btn btn-primary" data-toggle="modal"
+                    data-target="#userAddDialog">Добавить
+            </button>
+            <button id="delete" type="button" class="btn btn-primary" data-toggle="modal"
+                    data-target="#userAddDialog">Удалить
+            </button>
+        </div>
+        <div class="col-12">
+            <table class="table table-bordered my-2">
+                <thead>
+                <tr>
+                    <th class="col-1 text-center" scope="col">Чекбокс</th>
+                    <th class="col-1 text-center" scope="col">Иконка</th>
+                    <th class="col-5 text-center" scope="col">Название</th>
+                    <th class="col-5 text-center" scope="col">Описание</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="user : ${users}">
+                    <th scope="row" class="text-center align-middle">
+                        <label th:for="'checkbox-' + ${user.id}">
+                            <input type="checkbox" name="active"
+                                   th:id="'checkbox-' + ${user.id}" th:checked="${user.status}"
+                                   th:onchange="'updateStatus(' + ${user.id} + ')'"/>
+                        </label>
+                    </th>
+                    <th class="text-center align-middle">
+                        <img th:src="@{/images/{filename}(filename=${user.fileName})}"
+                             alt="Иконка"
+                             width="32" height="32"/>
+                    </th>
+                    <td class="align-middle" th:text="${user.name}">Name</td>
+                    <td class="align-middle" th:text="${user.description}">Description</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="userAddDialog" tabindex="-1" role="dialog" aria-labelledby="userAddDialogLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="userAddDialogLabel">Add user</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <input type="hidden" id="user-id">
+                    <div class="form-group text-center">
+                        <label class="form-check-label" for="user-status"></label>
+                        <input class="form-check-input" type="checkbox" id="user-status"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-filename">Иконка пользователя</label>
+                        <select class="form-control" id="user-filename" name="user-filename" required>
+                            <option value="icon1.png">Иконка 1</option>
+                            <option value="icon2.png">Иконка 2</option>
+                            <option value="icon3.png">Иконка 3</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-name" class="col-form-label">Название</label>
+                        <input type="text" class="form-control" id="user-name">
+                    </div>
+                    <div class="form-group">
+                        <label for="user-description" class="col-form-label">Описание</label>
+                        <input type="text" class="form-control" id="user-description">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                <button id="save-user-button" type="button" class="btn btn-primary">Создать</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+
+<!-- Optional JavaScript -->
+<script th:src="@{js/jquery-3.7.1.min.js}"></script>
+<script th:src="@{js/bootstrap.bundle.js}"></script>
+<script>
+    $('#userAddDialog').on('shown.bs.modal', function (event) {
+        let button = $(event.relatedTarget) // Button that triggered the modal
+        let userId = button.data('userid') // Extract info from data-* attributes
+
+        if (userId) {
+            $.get({
+                url: '/api/v1/user/' + userId,
+                success: (data) => {
+                    let modal = $(this)
+                    modal.find('#user-id').val(data.id)
+                    modal.find('#user-name').val(data.username)
+                    modal.find('#user-password').val(data.password)
+                },
+                error: (err) => {
+                    alert(err);
+                }
+            });
+        }
+    })
+
+    $('#save-user-button').click(function (e) {
+        e.preventDefault();
+        if (checkFields()) {
+            let modal = $('#userAddDialog')
+            let user = {
+                status: modal.find('#user-status').prop('checked'),
+                fileName: modal.find('#user-filename option:selected').val(),
+                name: modal.find('#user-name').val(),
+                description: modal.find('#user-description').val(),
+            };
+            if (modal.find('#user-id').val()) {
+                user.id = modal.find('#user-id').val()
+            }
+            $.ajax({
+                url: '/api/v1/user',
+                type: 'POST',
+                data: JSON.stringify(user),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: () => {
+                    location.reload()
+                },
+                error: (err) => {
+                    alert(err);
+                }
+            })
+            modal.modal('hide');
+        } else {
+            alert('Необходимо заполнить все поля');
+        }
+    });
+
+    function updateStatus(id) {
+        const checked = $('#checkbox-' + id).is(':checked');
+        $.ajax({
+            url: '/api/v1/user/' + id,
+            type: 'PUT',
+            data: JSON.stringify(checked),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function () {
+                console.log('User updated successfully');
+            },
+            error: function () {
+                alert('Error updating user');
+            }
+        });
+    }
+
+    function checkFields() {
+        let isValid = true;
+        if ($('#user-name').val() === '' || $('#user-description').val() === '') {
+            isValid = false;
+        }
+        return isValid;
+    }
+</script>
+
+</html>
