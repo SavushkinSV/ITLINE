@@ -59,13 +59,13 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="userAddDialogLabel">Add user</h5>
+                <h5 class="modal-title" id="userAddDialogLabel">Добавить пользователя</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <form>
+                <form id="add-user-form">
                     <input type="hidden" id="user-id">
                     <div class="form-group text-center">
                         <label class="form-check-label" for="user-status"></label>
@@ -90,7 +90,8 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                <button id="cancel-user-button" type="button" class="btn btn-secondary" data-dismiss="modal">Отмена
+                </button>
                 <button id="save-user-button" type="button" class="btn btn-primary">Создать</button>
             </div>
         </div>
@@ -102,7 +103,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="userDeleteDialogLabel">Delete user</h5>
+                <h5 class="modal-title" id="userDeleteDialogLabel">Удалить пользователя</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -124,12 +125,16 @@
 <script th:src="@{js/jquery-3.7.1.min.js}"></script>
 <script th:src="@{js/bootstrap.bundle.js}"></script>
 <script>
-    let selectedRow;
+    let selectedRow = 0;
+
+    $('#cancel-user-button').click(function () {
+        document.getElementById('add-user-form').reset();
+    });
 
     $('#save-user-button').click(function (event) {
         event.preventDefault();
         if (checkFields()) {
-            let modal = $('#userAddDialog')
+            let modal = $('#userAddDialog');
             let user = {
                 status: modal.find('#user-status').prop('checked'),
                 fileName: modal.find('#user-filename option:selected').val(),
@@ -184,10 +189,14 @@
     }
 
     $(document).ready(function () {
-        $('table').on('click', 'tr', function () {
+        $('table').on('click', 'tbody tr', function () {
+            if (selectedRow === 0) {
+                $('#delete').prop('disabled', false);
+            } else {
+                selectedRow.removeClass('table-primary');
+            }
             selectedRow = $(this);
-            $(this).addClass('selected');
-            $('#delete').prop('disabled', false);
+            selectedRow.addClass('table-primary');
         });
     });
 
