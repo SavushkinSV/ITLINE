@@ -17,9 +17,9 @@ public class UserResource {
         this.userService = userService;
     }
 
-    @GetMapping("/{userId}")
-    public User findById(@PathVariable long userId) {
-        return userService.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+    @GetMapping("/{id}")
+    public User findById(@PathVariable long id) {
+        return userService.findById(id).orElseThrow(() -> new NotFoundException("User not found"));
     }
 
     @PostMapping

@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import ssv.home.itline.service.UserService;
 
 @Controller
-@RequestMapping("/itline")
+@RequestMapping("/info")
 public class UserController {
 
     private final UserService userService;
@@ -19,6 +19,6 @@ public class UserController {
     @GetMapping
     public String findAll(Model model) {
         model.addAttribute("users", userService.findAll());
-        return "itline";
+        return "info";
     }
 }
